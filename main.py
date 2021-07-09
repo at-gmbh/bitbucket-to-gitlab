@@ -5,10 +5,10 @@ from typing import List, NamedTuple, Optional
 
 from atlassian import Bitbucket
 from gitlab import Gitlab, GitlabHttpError
-# please provide credentials through these environment variables
 from gitlab.v4.objects import Project
 from tqdm import tqdm
 
+# please provide credentials through these environment variables
 GITLAB_URL = os.getenv('GITLAB_URL')
 GITLAB_TOKEN = os.getenv('GITLAB_TOKEN')
 BITBUCKET_URL = os.getenv('BITBUCKET_URL')
@@ -112,9 +112,12 @@ def check_and_sleep(gitlab: Gitlab, processing: List[Project], pbar: tqdm,
         if status.import_status == 'started':
             updated.append(status)
         else:
-            tqdm.write(f"import of {status.path_with_namespace} finished "
-                       f"with status {status.import_status}")
             pbar.update(1)
+            if status.import_status == 'finished':
+                tqdm.write(f"import of {status.path_with_namespace} finished successfully")
+            else:
+                tqdm.write(f"warning: import of {status.path_with_namespace} finished "
+                           f"with status {status.import_status}")
     if len(updated) >= parallel_imports:
         time.sleep(sleep_time)
     return updated
@@ -153,7 +156,9 @@ def _trigger_import(gitlab: Gitlab, project: BitBucketRepo) -> Project:
 
 
 def main():
+    # get all projects from your bitbucket server
     projects = get_bitbucket_repos()
+    # now would be a good time to filter the projects, otherwise we'll migrate everything
     import_projects(projects)
 
 
