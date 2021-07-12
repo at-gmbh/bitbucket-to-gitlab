@@ -131,6 +131,7 @@ def trigger_import(gitlab: Gitlab, project: BitBucketRepo) -> Optional[Project]:
             if e.response_code == 422 and "Path has already been taken" in str(e):
                 tqdm.write(f"repo {project.path} already exists, skipping")
             else:
+                print(f"there was an unexpected error while importing {project}. {e}")
                 raise e
     else:
         return _trigger_import(gitlab, project)
@@ -149,7 +150,8 @@ def _trigger_import(gitlab: Gitlab, project: BitBucketRepo) -> Project:
         personal_access_token=BITBUCKET_TOKEN,
         bitbucket_server_project=project.project_slug,
         bitbucket_server_repo=project.repo_slug,
-        target_namespace=target_path
+        new_name=project.repo_slug,
+        target_namespace=target_path,
     )
     job = gitlab.projects.get(result['id'])
     return job
