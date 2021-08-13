@@ -343,13 +343,13 @@ def _trigger_import(gitlab: Gitlab, project: ProjectMapping, suffix: str = None)
 
 def main():
     # import all projects in the main namespace
-    print("importing Bitbucket projects from the main namespace")
+    print("== importing Bitbucket projects from the main namespace ==")
     import_main_projects()
     # now we copy all permissions (these are not covered by the gitlab import)
-    print("copying members and permissions for all projects that were migrated")
-    copy_permissions(dry_run=True)
+    print("== copying members and permissions for all projects that were migrated ==")
+    copy_permissions()
     # import all personal projects (permissions are set correctly here)
-    print("importing Bitbucket projects from the user namespace")
+    print("== importing Bitbucket projects from the user namespace ==")
     import_personal_projects()
 
 
