@@ -28,7 +28,7 @@ BITBUCKET_TOKEN = os.getenv('BITBUCKET_TOKEN')
 # 'rename' (import under a different name)
 on_duplicate = 'ignore'
 # common prefix to add before all groups. supports subgroups like namespace/subgroup (Optional)
-group_prefix = 'bitbucket'
+group_prefix = ''
 # the max. number of imports to run at the same time
 # (one import per CPU core on your GitLab server should work fine)
 parallel_imports = 4
@@ -110,7 +110,35 @@ class BitbucketMainRepoGenerator(BitbucketRepoGenerator):
 
 
 class BitbucketPersonalRepoGenerator(BitbucketRepoGenerator):
-    pass
+
+    def __init__(self):
+        super().__init__()
+        print(f"requesting all users from {BITBUCKET_URL} that are visible to {BITBUCKET_USER}")
+        self.users = list(self.bitbucket.get_users_info(limit=None))
+        self.group_count = len(self.users)
+
+    def yield_repos(self) -> Iterable[ProjectMapping]:
+        counter = 0
+        for bb_user in tqdm(self.users, unit='users'):
+            bb_user_slug = bb_user['slug']
+            if bb_user_slug in project_blacklist:
+                continue
+            bb_user_path = f'~{bb_user_slug}'
+            # list all repos in this group
+            bb_repos = list(self.bitbucket.repo_list(bb_user_path))
+            if not bb_repos:
+                tqdm.write(f"skipping {bb_user_slug}, no personal projects found")
+            for bb_repo in bb_repos:
+                bb_repo_slug = bb_repo['slug']
+                project = ProjectMapping(
+                    bb_project=bb_user_path,
+                    bb_repo=bb_repo_slug,
+                    gl_group=bb_user_slug,
+                    gl_project=bb_repo_slug,
+                )
+                yield project
+                counter += 1
+        tqdm.write(f"{counter} Bitbucket repos have been returned")
 
 
 def check_env(env: str):
@@ -223,7 +251,8 @@ def import_main_projects():
 
 
 def import_personal_projects():
-    pass
+    repo_generator = BitbucketPersonalRepoGenerator()
+    import_projects(repo_generator)
 
 
 def import_projects(repo_generator: BitbucketRepoGenerator):
@@ -314,10 +343,13 @@ def _trigger_import(gitlab: Gitlab, project: ProjectMapping, suffix: str = None)
 
 def main():
     # import all projects in the main namespace
+    print("importing Bitbucket projects from the main namespace")
     import_main_projects()
     # now we copy all permissions (these are not covered by the gitlab import)
+    print("copying members and permissions for all projects that were migrated")
     copy_permissions(dry_run=True)
     # import all personal projects (permissions are set correctly here)
+    print("importing Bitbucket projects from the user namespace")
     import_personal_projects()
 
 
