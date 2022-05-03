@@ -2,7 +2,7 @@
 
 A Python script to migrate projects from Bitbucket (Server/Cloud) to GitLab.
 
-Reads metadata from BitBucket via the [Atlassian Python API](https://atlassian-python-api.readthedocs.io/) and imports projects to GitLab using [python-gitlab](https://atlassian-python-api.readthedocs.io/). Project and repo names in Bitbucket are converted to group names and projects in GitLab, therefore the structure of the projects should be preserved. Projects are imported using the [GitLab Import API](https://docs.gitlab.com/ee/api/import.html), which comes with [a few limitations](https://docs.gitlab.com/ee/user/project/import/bitbucket_server.html#limitations), but at least projects, metadata, pull requests and user mappings are preserved.
+Reads metadata from BitBucket via the [Atlassian Python API](https://atlassian-python-api.readthedocs.io/) and imports projects to GitLab using [python-gitlab](https://python-gitlab.readthedocs.io). Project and repo names in Bitbucket are converted to group names and projects in GitLab, therefore the structure of the projects should be preserved. Projects are imported using the [GitLab Import API](https://docs.gitlab.com/ee/api/import.html), which comes with [a few limitations](https://docs.gitlab.com/ee/user/project/import/bitbucket_server.html#limitations), but at least projects, metadata, pull requests and user mappings are preserved.
 
 The migration consists of three parts:
 
