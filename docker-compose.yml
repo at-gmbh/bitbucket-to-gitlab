@@ -1,0 +1,9 @@
+version: "3"
+services:
+  python_migra_script:
+    env_file: .env
+    container_name: migra_script
+    build:
+      context: .
+      dockerfile: Dockerfile
+
